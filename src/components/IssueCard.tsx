@@ -1,14 +1,24 @@
 import { Link } from "react-router-dom";
-import { MapPin, ThumbsUp, MessageCircle, Clock } from "lucide-react";
+import { MapPin, ThumbsUp, Clock } from "lucide-react";
 import { Report, categoryLabels, severityColors, statusLabels } from "@/hooks/useReports";
 import { Badge } from "@/components/ui/badge";
 
+const SEVERITY_BORDER_COLORS: Record<string, string> = {
+  critical: "border-l-destructive",
+  high: "border-l-orange-500",
+  medium: "border-l-secondary",
+  low: "border-l-accent",
+};
+
 const IssueCard = ({ issue }: { issue: Report }) => {
   const timeAgo = getTimeAgo(issue.created_at);
+  const borderColor = SEVERITY_BORDER_COLORS[issue.severity] || "border-l-secondary";
 
   return (
     <Link to={`/issue/${issue.id}`} className="group block">
-      <div className="rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-secondary/30 hover:shadow-md">
+      <div
+        className={`rounded-2xl border border-border/60 border-l-4 ${borderColor} bg-card p-5 transition-all duration-300 hover:border-secondary/30 hover:shadow-md`}
+      >
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="rounded-lg text-xs font-medium">

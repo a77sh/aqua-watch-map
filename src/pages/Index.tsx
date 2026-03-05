@@ -4,7 +4,17 @@ import { Button } from "@/components/ui/button";
 import { useReports } from "@/hooks/useReports";
 import IssueCard from "@/components/IssueCard";
 import StatCard from "@/components/StatCard";
-import mapImage from "@/assets/map-placeholder.jpg";
+import ReportMap from "@/components/ReportMap";
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" },
+  }),
+};
 
 const Index = () => {
   const { data: reports = [], isLoading } = useReports();
@@ -15,16 +25,32 @@ const Index = () => {
       {/* Hero */}
       <section className="hero-gradient">
         <div className="container py-16 md:py-24">
-          <div className="mx-auto max-w-2xl text-center">
-            <h1 className="mb-4 text-4xl font-bold leading-tight text-foreground md:text-5xl">
+          <motion.div
+            className="mx-auto max-w-2xl text-center"
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.h1
+              className="mb-4 text-4xl font-bold leading-tight text-foreground md:text-5xl text-balance"
+              variants={fadeUp}
+              custom={0}
+            >
               Report Water Issues
               <br />
               <span className="text-secondary">In Your Community</span>
-            </h1>
-            <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
+            </motion.h1>
+            <motion.p
+              className="mb-8 text-lg leading-relaxed text-muted-foreground text-pretty"
+              variants={fadeUp}
+              custom={1}
+            >
               Help keep your neighborhood safe by reporting water infrastructure problems. Track issues, confirm reports, and stay informed.
-            </p>
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            </motion.p>
+            <motion.div
+              className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+              variants={fadeUp}
+              custom={2}
+            >
               <Link to="/report">
                 <Button className="gap-2 rounded-xl bg-secondary px-6 py-3 text-secondary-foreground shadow-none hover:bg-secondary/90">
                   <Plus className="h-4 w-4" />
@@ -37,14 +63,19 @@ const Index = () => {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Map Section */}
       <section className="container -mt-4 mb-12">
-        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
+        <motion.div
+          className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+        >
           <div className="flex items-center justify-between border-b border-border/40 px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-foreground">Live Issue Map</h2>
@@ -55,29 +86,46 @@ const Index = () => {
                 <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
                 Critical
               </span>
+              <span className="flex items-center gap-1.5 rounded-lg bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                High
+              </span>
               <span className="hidden items-center gap-1.5 rounded-lg bg-secondary/10 px-2.5 py-1 text-xs font-medium text-secondary sm:flex">
                 <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
-                Active
+                Medium
+              </span>
+              <span className="hidden items-center gap-1.5 rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent md:flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                Low
               </span>
             </div>
           </div>
-          <div className="relative aspect-[16/7] w-full overflow-hidden">
-            <img
-              src={mapImage}
-              alt="Map showing reported water issues across the city"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        </div>
+          <ReportMap
+            reports={reports}
+            className="aspect-[4/3] md:aspect-[16/7]"
+          />
+        </motion.div>
       </section>
 
       {/* Stats */}
       <section className="container mb-12">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCard icon={AlertTriangle} label="Active Reports" value={reports.filter(r => r.status !== 'resolved').length} />
-          <StatCard icon={Droplets} label="Resolved" value={reports.filter(r => r.status === 'resolved').length} />
-          <StatCard icon={Users} label="Total Confirmations" value={reports.reduce((sum, r) => sum + r.confirmations, 0)} />
-          <StatCard icon={MapPin} label="Total Reports" value={reports.length} />
+          {[
+            { icon: AlertTriangle, label: "Active Reports", value: reports.filter(r => r.status !== 'resolved').length, i: 0 },
+            { icon: Droplets, label: "Resolved", value: reports.filter(r => r.status === 'resolved').length, i: 1 },
+            { icon: Users, label: "Total Confirmations", value: reports.reduce((sum, r) => sum + r.confirmations, 0), i: 2 },
+            { icon: MapPin, label: "Total Reports", value: reports.length, i: 3 },
+          ].map((stat) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ delay: stat.i * 0.08, duration: 0.5, ease: "easeOut" }}
+            >
+              <StatCard icon={stat.icon} label={stat.label} value={stat.value} />
+            </motion.div>
+          ))}
         </div>
       </section>
 
@@ -86,7 +134,7 @@ const Index = () => {
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground">Recent Reports</h2>
           <Link to="/community" className="text-sm font-medium text-secondary hover:text-secondary/80 transition-colors">
-            View all →
+            View all &rarr;
           </Link>
         </div>
         {isLoading ? (
@@ -101,8 +149,16 @@ const Index = () => {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {recentIssues.map((issue) => (
-              <IssueCard key={issue.id} issue={issue} />
+            {recentIssues.map((issue, idx) => (
+              <motion.div
+                key={issue.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: idx * 0.08, duration: 0.5, ease: "easeOut" }}
+              >
+                <IssueCard issue={issue} />
+              </motion.div>
             ))}
           </div>
         )}
