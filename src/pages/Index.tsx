@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { AlertTriangle, Droplets, MapPin, Users, ArrowRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockIssues } from "@/data/mockIssues";
+import { useReports } from "@/hooks/useReports";
 import IssueCard from "@/components/IssueCard";
 import StatCard from "@/components/StatCard";
 import mapImage from "@/assets/map-placeholder.jpg";
 
 const Index = () => {
-  const recentIssues = mockIssues.slice(0, 3);
+  const { data: reports = [], isLoading } = useReports();
+  const recentIssues = reports.slice(0, 3);
 
   return (
     <div className="min-h-screen">
@@ -21,7 +22,7 @@ const Index = () => {
               <span className="text-secondary">In Your Community</span>
             </h1>
             <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-              Help keep your neighborhood safe by reporting water infrastructure problems. Track issues, upvote reports, and stay informed.
+              Help keep your neighborhood safe by reporting water infrastructure problems. Track issues, confirm reports, and stay informed.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link to="/report">
@@ -47,7 +48,7 @@ const Index = () => {
           <div className="flex items-center justify-between border-b border-border/40 px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-foreground">Live Issue Map</h2>
-              <p className="text-sm text-muted-foreground">{mockIssues.length} active reports in your area</p>
+              <p className="text-sm text-muted-foreground">{reports.length} active reports in your area</p>
             </div>
             <div className="flex gap-2">
               <span className="flex items-center gap-1.5 rounded-lg bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">
@@ -66,32 +67,6 @@ const Index = () => {
               alt="Map showing reported water issues across the city"
               className="h-full w-full object-cover"
             />
-            {/* Map overlay pins */}
-            <div className="absolute inset-0">
-              {[
-                { top: "30%", left: "25%", severity: "critical" },
-                { top: "45%", left: "55%", severity: "high" },
-                { top: "60%", left: "35%", severity: "medium" },
-                { top: "25%", left: "70%", severity: "critical" },
-                { top: "55%", left: "75%", severity: "low" },
-                { top: "40%", left: "40%", severity: "medium" },
-              ].map((pin, i) => (
-                <div
-                  key={i}
-                  className="absolute"
-                  style={{ top: pin.top, left: pin.left }}
-                >
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-card shadow-md ${
-                    pin.severity === "critical" ? "bg-destructive" :
-                    pin.severity === "high" ? "bg-orange-500" :
-                    pin.severity === "medium" ? "bg-secondary" :
-                    "bg-accent"
-                  }`}>
-                    <Droplets className="h-4 w-4 text-secondary-foreground" />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -99,10 +74,10 @@ const Index = () => {
       {/* Stats */}
       <section className="container mb-12">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCard icon={AlertTriangle} label="Active Reports" value={mockIssues.length} />
-          <StatCard icon={Droplets} label="Resolved This Month" value={12} />
-          <StatCard icon={Users} label="Community Members" value="1.2k" />
-          <StatCard icon={MapPin} label="Areas Covered" value={8} />
+          <StatCard icon={AlertTriangle} label="Active Reports" value={reports.filter(r => r.status !== 'resolved').length} />
+          <StatCard icon={Droplets} label="Resolved" value={reports.filter(r => r.status === 'resolved').length} />
+          <StatCard icon={Users} label="Total Confirmations" value={reports.reduce((sum, r) => sum + r.confirmations, 0)} />
+          <StatCard icon={MapPin} label="Total Reports" value={reports.length} />
         </div>
       </section>
 
@@ -114,11 +89,23 @@ const Index = () => {
             View all →
           </Link>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {recentIssues.map((issue) => (
-            <IssueCard key={issue.id} issue={issue} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-48 animate-pulse rounded-2xl bg-muted" />
+            ))}
+          </div>
+        ) : recentIssues.length === 0 ? (
+          <div className="flex items-center justify-center rounded-2xl border border-border/60 bg-card py-16">
+            <p className="text-muted-foreground">No reports yet. Be the first to report an issue!</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {recentIssues.map((issue) => (
+              <IssueCard key={issue.id} issue={issue} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
