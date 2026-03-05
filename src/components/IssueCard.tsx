@@ -1,27 +1,25 @@
 import { Link } from "react-router-dom";
 import { MapPin, ThumbsUp, MessageCircle, Clock } from "lucide-react";
-import { WaterIssue, categoryLabels, severityColors, statusLabels } from "@/data/mockIssues";
+import { Report, categoryLabels, severityColors, statusLabels } from "@/hooks/useReports";
 import { Badge } from "@/components/ui/badge";
 
-const IssueCard = ({ issue }: { issue: WaterIssue }) => {
-  const timeAgo = getTimeAgo(issue.reportedAt);
+const IssueCard = ({ issue }: { issue: Report }) => {
+  const timeAgo = getTimeAgo(issue.created_at);
 
   return (
     <Link to={`/issue/${issue.id}`} className="group block">
-      <div
-        className="rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-secondary/30 hover:shadow-md"
-      >
+      <div className="rounded-2xl border border-border/60 bg-card p-5 transition-all duration-300 hover:border-secondary/30 hover:shadow-md">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="rounded-lg text-xs font-medium">
-              {categoryLabels[issue.category]}
+              {categoryLabels[issue.category] || issue.category}
             </Badge>
-            <Badge className={`rounded-lg text-xs font-medium ${severityColors[issue.severity]}`}>
+            <Badge className={`rounded-lg text-xs font-medium ${severityColors[issue.severity] || ""}`}>
               {issue.severity}
             </Badge>
           </div>
           <span className="shrink-0 rounded-lg bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-            {statusLabels[issue.status]}
+            {statusLabels[issue.status] || issue.status}
           </span>
         </div>
 
@@ -36,16 +34,12 @@ const IssueCard = ({ issue }: { issue: WaterIssue }) => {
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
-            <span>{issue.location}</span>
+            <span>{issue.latitude.toFixed(3)}, {issue.longitude.toFixed(3)}</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <ThumbsUp className="h-3.5 w-3.5" />
-              {issue.upvotes}
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageCircle className="h-3.5 w-3.5" />
-              {issue.comments}
+              {issue.confirmations}
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
